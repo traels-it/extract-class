@@ -1,3 +1,4 @@
+require 'active_support'
 require 'spec_helper'
 
 describe SurveyInviter, '#valid?' do
