@@ -17,18 +17,18 @@ class SurveyInviter
   def initialize(attributes = {})
     @survey = attributes[:survey]
     @message = attributes[:message] || ''
-    @recipients = attributes[:recipients] || ''
+    @recipients = Recipients.new(attributes[:recipients])
     @sender = attributes[:sender]
   end
 
-  attr_reader :message, :recipients, :survey
+  attr_reader :message, :survey
 
   def valid?
     valid_message? && valid_recipients?
   end
 
   def deliver
-    recipient_list.each do |email|
+    @recipients.emails.each do |email|
       invitation = Invitation.create(
         survey: @survey,
         sender: @sender,
@@ -40,9 +40,9 @@ class SurveyInviter
   end
 
   def invalid_recipients
-    @invalid_recipients ||= recipient_list.map do |item|
-      unless item.match(EMAIL_REGEX)
-        item
+    @invalid_recipients ||= @recipients.emails.map do |email|
+      unless email.match(EMAIL_REGEX)
+        email
       end
     end.compact
   end
@@ -55,9 +55,5 @@ class SurveyInviter
 
   def valid_recipients?
     invalid_recipients.empty?
-  end
-
-  def recipient_list
-    @recipient_list ||= @recipients.gsub(/\s+/, '').split(/[\n,;]+/)
   end
 end
